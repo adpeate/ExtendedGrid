@@ -28,10 +28,12 @@ class Atwix_ExtendedGrid_Model_Observer
      */
     public function salesOrderGridCollectionLoadBefore($observer)
     {
+		$table = Mage::getSingleton("core/resource")->getTableName("sales_flat_order_item");
+		
         $collection = $observer->getOrderGridCollection();
         $select = $collection->getSelect();
         $select->joinLeft(array('payment' => $collection->getTable('sales/order_payment')), 'payment.parent_id=main_table.entity_id', array('payment_method' => 'method'));
-        $select->join('sales_flat_order_item', '`sales_flat_order_item`.order_id=`main_table`.entity_id', array('skus' => new Zend_Db_Expr('group_concat(`sales_flat_order_item`.sku SEPARATOR ", ")')));
+        $select->join($table, '`'.$table.'`.order_id=`main_table`.entity_id', array('skus' => new Zend_Db_Expr('group_concat(`'.$table.'`.sku SEPARATOR ", ")')));
         $select->group('main_table.entity_id');
     }
 
@@ -47,8 +49,9 @@ class Atwix_ExtendedGrid_Model_Observer
             return $this;
         }
 
+		$table = Mage::getSingleton("core/resource")->getTableName("sales_flat_order_item");
         $collection->getSelect()->having(
-            "group_concat(`sales_flat_order_item`.sku SEPARATOR ', ') like ?", "%$value%");
+            "group_concat(`$table`.sku SEPARATOR ', ') like ?", "%$value%");
 
         return $this;
     }
